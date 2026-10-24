@@ -1,0 +1,51 @@
+name: Build EXE（自动打包 AndrewMinecraftDownloader）
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: 安装打包工具
+        run: pip install pyinstaller
+
+      - name: 语法检查
+        run: python -m py_compile main.py gui.py manifest.py downloader.py selftest.py
+
+      - name: 自检（真实下载最新版服务端 jar + sha1 校验）
+        run: python selftest.py
+
+      - name: 生成程序图标（纯标准库，免二进制入库）
+        run: python tools/make_icon.py
+
+      - name: 打包单文件 exe
+        run: pyinstaller --onefile --windowed --name AndrewMinecraftDownloader --icon assets/icon.ico main.py
+
+      - name: 上传 exe 产物
+        uses: actions/upload-artifact@v4
+        with:
+          name: AndrewMinecraftDownloader-exe
+          path: dist/AndrewMinecraftDownloader.exe
+
+  release:
+    needs: build
+    if: startsWith(github.ref, 'refs/tags/v')
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: AndrewMinecraftDownloader-exe
+          path: dist
+
+      - uses: softprops/action-gh-release@v2
+        with:
+          files: dist/AndrewMinecraftDownloader.exe

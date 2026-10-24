@@ -1,0 +1,9 @@
+__pycache__/
+*.pyc
+dist/
+build/
+*.spec
+.venv/
+venv/
+# 图标由 tools/make_icon.py 生成，不入库
+assets/icon.ico
