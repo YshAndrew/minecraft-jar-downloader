@@ -12,6 +12,19 @@ from manifest import fetch_manifest, latest_release, resolve_download  # noqa: E
 from downloader import download  # noqa: E402
 
 
+def _force_utf8():
+    """Windows 控制台默认 cp1252，中文 print 会抛 UnicodeEncodeError；强制 UTF-8 输出。"""
+    for stream in (sys.stdout, sys.stderr):
+        if stream is not None and hasattr(stream, "reconfigure"):
+            try:
+                stream.reconfigure(encoding="utf-8", errors="replace")
+            except (OSError, ValueError):
+                pass
+
+
+_force_utf8()
+
+
 def main():
     print("[1/4] 拉取版本清单 ...", flush=True)
     manifest = fetch_manifest(force=True)

@@ -8,6 +8,8 @@ on:
 jobs:
   build:
     runs-on: windows-latest
+    env:
+      PYTHONUTF8: "1"  # Windows runner 控制台 cp1252 会炸中文 print，强制 UTF-8
     steps:
       - uses: actions/checkout@v4
 

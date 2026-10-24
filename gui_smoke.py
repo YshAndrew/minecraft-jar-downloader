@@ -13,6 +13,19 @@ import tkinter as tk  # noqa: E402
 
 from gui import APP_TITLE, AmdApp  # noqa: E402
 
+
+def _force_utf8():
+    """Windows 控制台默认 cp1252，中文 print 会抛 UnicodeEncodeError；强制 UTF-8 输出。"""
+    for stream in (sys.stdout, sys.stderr):
+        if stream is not None and hasattr(stream, "reconfigure"):
+            try:
+                stream.reconfigure(encoding="utf-8", errors="replace")
+            except (OSError, ValueError):
+                pass
+
+
+_force_utf8()
+
 TIMEOUT = 20  # 版本清单加载超时（秒）
 
 

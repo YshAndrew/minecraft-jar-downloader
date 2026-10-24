@@ -1,9 +1,23 @@
 # -*- coding: utf-8 -*-
-"""生成 AMD 程序图标：16x16 像素画草方块 → 256x256 PNG → assets/icon.ico + icon.png（纯标准库）。"""
+"""生成 AMD 程序图标：16x16 像素画草方块 → 256x256 PNG → assets/icon.ico（纯标准库）。"""
 
 import os
 import struct
+import sys
 import zlib
+
+
+def _force_utf8():
+    """Windows 控制台默认 cp1252，中文 print 会抛 UnicodeEncodeError；强制 UTF-8 输出。"""
+    for stream in (sys.stdout, sys.stderr):
+        if stream is not None and hasattr(stream, "reconfigure"):
+            try:
+                stream.reconfigure(encoding="utf-8", errors="replace")
+            except (OSError, ValueError):
+                pass
+
+
+_force_utf8()
 
 # 调色板（低饱和，贴合原版 MC 质感）
 PALETTE = {
