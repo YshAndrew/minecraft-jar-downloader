@@ -27,6 +27,8 @@ python selftest.py
 
 联网拉取版本清单 → 下载最新发布版服务端 jar → sha1 校验，全部通过输出 `✓`。
 
+GUI 冒烟（需图形环境）：`python gui_smoke.py`，创建主窗口并等待版本清单加载，验证界面更新链路。
+
 ## 打包 exe
 
 本地（Windows）：

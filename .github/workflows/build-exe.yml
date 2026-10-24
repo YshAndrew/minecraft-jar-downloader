@@ -19,10 +19,13 @@ jobs:
         run: pip install pyinstaller
 
       - name: 语法检查
-        run: python -m py_compile main.py gui.py manifest.py downloader.py selftest.py
+        run: python -m py_compile main.py gui.py manifest.py downloader.py selftest.py gui_smoke.py
 
       - name: 自检（真实下载最新版服务端 jar + sha1 校验）
         run: python selftest.py
+
+      - name: GUI 冒烟测试（真实拉取清单 + 界面更新链路）
+        run: python gui_smoke.py
 
       - name: 生成程序图标（纯标准库，免二进制入库）
         run: python tools/make_icon.py
