@@ -16,9 +16,9 @@ from downloader import DownloadError, download
 from manifest import ManifestError, fetch_manifest, latest_release, list_versions, resolve_download
 
 APP_TITLE = "Andrew Minecraft Downloader"
-APP_SUBTITLE = "AMD · 阿曼达 —— Minecraft 服务端 / 客户端 jar 下载器"
+APP_SUBTITLE = "阿曼达下载器"
 APP_VERSION = "1.0.0"
-KIND_NAMES = {"server": "服务端 jar", "client": "客户端 jar"}
+KIND_NAMES = {"server": "服务端", "client": "客户端"}
 
 # 低饱和材质配色（草方块主题）
 C = {
@@ -35,6 +35,7 @@ C = {
     "header":     "#2e3a2c",  # 深苔藓页眉
     "header_tx":  "#f2efe4",
     "header_sub": "#a8b8a0",
+    "header_hi":  "#d4b25e",  # 暖金 · 标题首字母高亮
     "ok":         "#4e7a5a",
     "err":        "#a35d4c",
 }
@@ -90,7 +91,14 @@ def setup_style(root):
 
     style.configure("Amd.TLabel", background=C["bg"], foreground=C["text"], font=(fam, 10))
     style.configure("AmdMuted.TLabel", background=C["bg"], foreground=C["muted"], font=(fam, 9))
-    style.configure("AmdHeader.TLabel", background=C["header"], foreground=C["header_tx"], font=(fam, 15, "bold"))
+    style.configure(
+        "AmdHeader.TLabel", background=C["header"], foreground=C["header_tx"],
+        font=(fam, 15, "bold"), padding=0, borderwidth=0, relief="flat",
+    )
+    style.configure(
+        "AmdHeaderHi.TLabel", background=C["header"], foreground=C["header_hi"],
+        font=(fam, 15, "bold"), padding=0, borderwidth=0, relief="flat",
+    )
     style.configure("AmdSub.TLabel", background=C["header"], foreground=C["header_sub"], font=(fam, 9))
     style.configure("AmdStatus.TLabel", background=C["bg"], foreground=C["text"], font=(fam, 10))
     style.configure("AmdOk.TLabel", background=C["bg"], foreground=C["ok"], font=(fam, 10, "bold"))
@@ -174,11 +182,16 @@ class AmdApp:
         self.refresh_versions()
 
     def _build_widgets(self):
-        # ---- 页眉 ----
+        # ---- 页眉（标题首字母 A / M / D 以暖金高亮）----
         head = tk.Frame(self.root, bg=C["header"], height=64)
         head.pack(fill="x")
         head.pack_propagate(False)
-        ttk.Label(head, text=APP_TITLE, style="AmdHeader.TLabel").pack(anchor="w", padx=18, pady=(10, 0))
+        title_row = tk.Frame(head, bg=C["header"])
+        title_row.pack(anchor="w", padx=18, pady=(10, 0))
+        segments = (("A", True), ("ndrew ", False), ("M", True), ("inecraft ", False), ("D", True), ("ownloader", False))
+        for text, highlight in segments:
+            style_name = "AmdHeaderHi.TLabel" if highlight else "AmdHeader.TLabel"
+            ttk.Label(title_row, text=text, style=style_name).pack(side="left")
         ttk.Label(head, text=APP_SUBTITLE, style="AmdSub.TLabel").pack(anchor="w", padx=18)
 
         # ---- 表单 ----
@@ -192,8 +205,8 @@ class AmdApp:
         type_row = ttk.Frame(body, style="Amd.TFrame")
         type_row.grid(row=0, column=1, columnspan=2, sticky="w", **pad)
         self.kind = tk.StringVar(value="server")
-        ttk.Radiobutton(type_row, text="服务端 jar", variable=self.kind, value="server", style="Amd.TRadiobutton").pack(side="left", padx=(0, 16))
-        ttk.Radiobutton(type_row, text="客户端 jar", variable=self.kind, value="client", style="Amd.TRadiobutton").pack(side="left")
+        ttk.Radiobutton(type_row, text="服务端", variable=self.kind, value="server", style="Amd.TRadiobutton").pack(side="left", padx=(0, 16))
+        ttk.Radiobutton(type_row, text="客户端", variable=self.kind, value="client", style="Amd.TRadiobutton").pack(side="left")
 
         ttk.Label(body, text="游戏版本", style="Amd.TLabel").grid(row=1, column=0, sticky="w", **pad)
         self.version_var = tk.StringVar()
@@ -270,7 +283,7 @@ class AmdApp:
         dest = os.path.join(dest_dir, filename)
         self.download_btn.state(["disabled"])
         self.progress["value"] = 0
-        self.status_var.set(f"准备下载 {KIND_NAMES[kind]}（{version}）…")
+        self.status_var.set(f"准备下载{KIND_NAMES[kind]}（{version}）…")
         self.status_label.configure(style="AmdStatus.TLabel")
         self._run_bg(self._do_download, kind, version, dest)
 
@@ -309,7 +322,7 @@ class AmdApp:
             ids = [v for v, _ in versions]
             self.version_cb["values"] = ids
             self.version_var.set(latest)
-            self.status_var.set(f"就绪：已加载 {len(ids)} 个版本（默认最新发布版 {latest}）")
+            self.status_var.set(f"就绪：已加载 {len(ids)} 个版本")
         elif tag == "progress":
             _, downloaded, total, speed = msg
             if total and speed:
@@ -328,7 +341,7 @@ class AmdApp:
             self.download_btn.state(["!disabled"])
             self.status_var.set("下载完成，sha1 校验通过 ✓")
             self.status_label.configure(style="AmdOk.TLabel")
-            if messagebox.askyesno(APP_TITLE, f"{kind} 下载完成（sha1 校验通过）\n\n{dest}\n\n打开所在文件夹？"):
+            if messagebox.askyesno(APP_TITLE, f"{kind}下载完成（sha1 校验通过）\n\n{dest}\n\n打开所在文件夹？"):
                 self.open_folder(dest)
         elif tag == "error":
             self.download_btn.state(["!disabled"])
