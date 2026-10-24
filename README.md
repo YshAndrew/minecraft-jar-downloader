@@ -7,7 +7,7 @@
 - 支持下载原版服务端 jar（server）与客户端 jar（client），界面内一键切换
 - 版本列表实时取自 Mojang 官方接口，默认最新发布版，发布版 / 快照均可选
 - 保存路径可选：系统文件夹选择框或手动输入（默认 `~/Downloads/Minecraft`）
-- 后台线程下载，进度条 + 速度显示，不卡界面
+- 后台线程下载，进度条 + 速度 + 剩余时间显示，不卡界面
 - 下载完成自动按官方 sha1 逐字节校验，失败明确提示并清理残留
 - 版本清单本地缓存 1 小时，断网时自动降级使用旧缓存
 
@@ -31,11 +31,11 @@ GUI 冒烟（需图形环境）：`python gui_smoke.py`，创建主窗口并等�
 
 ## 打包 exe
 
-本地（Windows）：
+本地（Windows，需先执行 `python tools/make_icon.py` 生成图标）：
 
 ```bash
 pip install pyinstaller
-pyinstaller --onefile --windowed --name AndrewMinecraftDownloader --icon assets/icon.ico main.py
+pyinstaller --onefile --windowed --name AndrewMinecraftDownloader --icon assets/icon.ico --add-data "assets/icon.png;assets" main.py
 ```
 
 产物在 `dist/AndrewMinecraftDownloader.exe`，目标电脑无需安装 Python。
@@ -46,7 +46,7 @@ pyinstaller --onefile --windowed --name AndrewMinecraftDownloader --icon assets/
 
 ## 图标
 
-`assets/icon.ico` 由 `tools/make_icon.py` 生成（16x16 草方块像素画放大到 256x256，纯标准库），可自行修改后重新生成；CI 打包时也会自动生成。
+`assets/icon.ico` 与 `assets/icon.png` 由 `tools/make_icon.py` 生成（16x16 草方块像素画放大到 256x256，纯标准库），可自行修改后重新生成；CI 打包时也会自动生成，exe 与窗口图标均使用草方块。
 
 ## 许可
 

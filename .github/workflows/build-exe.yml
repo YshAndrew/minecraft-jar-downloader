@@ -19,19 +19,19 @@ jobs:
         run: pip install pyinstaller
 
       - name: 语法检查
-        run: python -m py_compile main.py gui.py manifest.py downloader.py selftest.py gui_smoke.py
-
-      - name: 自检（真实下载最新版服务端 jar + sha1 校验）
-        run: python selftest.py
-
-      - name: GUI 冒烟测试（真实拉取清单 + 界面更新链路）
-        run: python gui_smoke.py
+        run: python -m py_compile main.py gui.py manifest.py downloader.py selftest.py gui_smoke.py tools/make_icon.py
 
       - name: 生成程序图标（纯标准库，免二进制入库）
         run: python tools/make_icon.py
 
+      - name: GUI 冒烟测试（真实拉取清单 + 界面更新链路）
+        run: python gui_smoke.py
+
+      - name: 自检（真实下载最新版服务端 jar + sha1 校验）
+        run: python selftest.py
+
       - name: 打包单文件 exe
-        run: pyinstaller --onefile --windowed --name AndrewMinecraftDownloader --icon assets/icon.ico main.py
+        run: pyinstaller --onefile --windowed --name AndrewMinecraftDownloader --icon assets/icon.ico --add-data "assets/icon.png;assets" main.py
 
       - name: 上传 exe 产物
         uses: actions/upload-artifact@v4

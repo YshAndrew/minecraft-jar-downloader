@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""生成 AMD 程序图标：16x16 像素画草方块 → 256x256 PNG → assets/icon.ico（纯标准库）。"""
+"""生成 AMD 程序图标：16x16 像素画草方块 → 256x256 PNG → assets/icon.ico + icon.png（纯标准库）。"""
 
 import os
 import struct
@@ -61,19 +61,27 @@ def build_icon():
 
 
 def main():
-    out = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "assets", "icon.ico")
-    os.makedirs(os.path.dirname(out), exist_ok=True)
+    assets = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "assets")
+    os.makedirs(assets, exist_ok=True)
     data = build_icon()
-    with open(out, "wb") as f:
+    ico_path = os.path.join(assets, "icon.ico")
+    png_path = os.path.join(assets, "icon.png")
+    with open(ico_path, "wb") as f:
         f.write(data)
-    print(f"icon.ico 已生成：{len(data):,} 字节 → {out}")
+    # 窗口图标：ICO 内的 PNG 数据直接另存一份（tk.PhotoImage 原生支持 PNG）
+    with open(png_path, "wb") as f:
+        f.write(data[22:])
+    print(f"icon.ico 已生成：{len(data):,} 字节 → {ico_path}")
+    print(f"icon.png 已生成：{os.path.getsize(png_path):,} 字节 → {png_path}")
     # 回读校验
-    with open(out, "rb") as f:
+    with open(ico_path, "rb") as f:
         head = f.read(22)
     res, count, _ = struct.unpack("<HHH", head[:6])
     _, _, _, _, planes, bpp, size, offset = struct.unpack("<BBBBHHII", head[6:22])
     assert res == 0 and count == 1 and planes == 1 and bpp == 32 and size == len(data) - 22, "ICO 头校验失败"
-    print("回读校验通过：1 幅 256x256 RGBA 图标")
+    with open(png_path, "rb") as f:
+        assert f.read(8) == b"\x89PNG\r\n\x1a\n", "PNG 魔数校验失败"
+    print("回读校验通过：1 幅 256x256 RGBA 图标（ICO + PNG）")
 
 
 if __name__ == "__main__":
